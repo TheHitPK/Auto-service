@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
@@ -125,6 +126,8 @@ class _EnVivo extends StatelessWidget {
       ),
       _Medida('Carga motor', d.carga?.toString(), unidad: '%'),
       _Medida('Acelerador', d.acelerador?.toString(), unidad: '%'),
+      _Medida('Temp. admisión', d.tempAdmision?.toString(), unidad: '°C'),
+      _Medida('Presión MAP', d.presionAdmision?.toString(), unidad: 'kPa'),
       _Medida(
         'Batería',
         voltaje?.toStringAsFixed(1),
@@ -134,7 +137,8 @@ class _EnVivo extends StatelessWidget {
     ];
     return LayoutBuilder(builder: (context, c) {
       const hueco = 12.0;
-      final ancho = (c.maxWidth - hueco * 2) / 3;
+      final columnas = c.maxWidth >= 520 ? 4 : 2;
+      final ancho = (c.maxWidth - hueco * (columnas - 1)) / columnas - 0.01;
       return Wrap(
         spacing: hueco,
         runSpacing: hueco,
@@ -394,7 +398,7 @@ class _SelectorState extends State<_Selector> {
         });
         return;
       }
-      if (!await TransporteClasico.encendido()) {
+      if (Platform.isAndroid && !await TransporteClasico.encendido()) {
         setState(() => _problema = 'El Bluetooth está apagado. Enciéndelo en los ajustes del estéreo.');
         return;
       }

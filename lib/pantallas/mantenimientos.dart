@@ -22,7 +22,14 @@ class PantallaMantenimientos extends StatelessWidget {
             titulo: 'Próximos servicios',
             icono: Icons.build,
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                TextoTenue(app.kmInicial > 0
+                    ? 'Los servicios sin registro se cuentan desde los '
+                        '${formatoKm(app.kmInicial)} km (inicio en la app).'
+                    : 'Indica el "kilometraje al empezar" en Configuración para que los '
+                        'servicios sin registro se calculen mejor.'),
+                const SizedBox(height: 6),
                 for (final (i, p) in proximos.indexed) ...[
                   if (i > 0) const Divider(),
                   _Fila(p),
@@ -43,8 +50,17 @@ class _Fila extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = p.vencido ? colorPeligro : (p.cercano ? colorAviso : colorOk);
+    final (color, etiqueta) = switch (p.estado) {
+      EstadoServicio.vencido => (colorPeligro, 'VENCIDO ${formatoKm(-p.kmFaltan)} km'),
+      EstadoServicio.revisar => (colorAviso, 'Revisar'),
+      EstadoServicio.proximo => (colorAviso, 'Faltan ${formatoKm(p.kmFaltan)} km'),
+      EstadoServicio.ok => (colorOk, 'Faltan ${formatoKm(p.kmFaltan)} km'),
+    };
     final ultimo = p.ultimo;
+    final etiquetas = [
+      if (p.servicio.esCritico) const Etiqueta('Crítico', color: colorAviso),
+      Etiqueta(etiqueta, color: color),
+    ];
     return InkWell(
       onTap: () => Navigator.push(
         context,
@@ -52,45 +68,48 @@ class _Fila extends StatelessWidget {
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 12),
-        child: Row(
-          children: [
-            Container(
-              width: 6,
-              height: 52,
-              decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(3)),
-            ),
-            const SizedBox(width: 14),
-            Icon(
-              p.servicio.esSensor ? Icons.sensors : Icons.build_circle_outlined,
-              color: colorTenue,
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(p.servicio.nombre,
-                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
-                  const SizedBox(height: 2),
-                  TextoTenue(
-                    'Próximo a los ${formatoKm(p.kmProximo)} km · '
-                    '${ultimo == null ? 'nunca registrado' : 'último a los ${formatoKm(ultimo.km)} km'}',
-                  ),
-                ],
+        // En pantallas angostas las etiquetas bajan debajo del nombre.
+        child: LayoutBuilder(builder: (context, c) {
+          final ancho = c.maxWidth >= 560;
+          return Row(
+            children: [
+              Container(
+                width: 6,
+                height: 52,
+                decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(3)),
               ),
-            ),
-            const SizedBox(width: 12),
-            if (p.servicio.esCritico) ...[
-              const Etiqueta('Crítico', color: colorAviso),
-              const SizedBox(width: 8),
+              const SizedBox(width: 14),
+              Icon(
+                p.servicio.esSensor ? Icons.sensors : Icons.build_circle_outlined,
+                color: colorTenue,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(p.servicio.nombre,
+                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+                    const SizedBox(height: 2),
+                    TextoTenue(
+                      '${ultimo == null ? 'Sin registro' : 'Último a los ${formatoKm(ultimo.km)} km'}'
+                      ' · próximo a los ${formatoKm(p.kmProximo)} km',
+                    ),
+                    if (!ancho) ...[
+                      const SizedBox(height: 6),
+                      Wrap(spacing: 8, runSpacing: 6, children: etiquetas),
+                    ],
+                  ],
+                ),
+              ),
+              if (ancho) ...[
+                const SizedBox(width: 12),
+                Wrap(spacing: 8, children: etiquetas),
+              ],
+              const Icon(Icons.chevron_right, color: colorTenue),
             ],
-            Etiqueta(
-              p.vencido ? 'VENCIDO ${formatoKm(-p.kmFaltan)} km' : 'Faltan ${formatoKm(p.kmFaltan)} km',
-              color: color,
-            ),
-            const Icon(Icons.chevron_right, color: colorTenue),
-          ],
-        ),
+          );
+        }),
       ),
     );
   }

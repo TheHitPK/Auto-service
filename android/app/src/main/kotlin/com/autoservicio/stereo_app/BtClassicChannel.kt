@@ -57,6 +57,7 @@ class BtClassicChannel(context: Context, messenger: BinaryMessenger) :
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
         when (call.method) {
             "disponible" -> result.success(adapter != null)
+            "sdk" -> result.success(android.os.Build.VERSION.SDK_INT)
             "encendido" -> result.success(adapter?.isEnabled == true)
             "emparejados" -> emparejados(result)
             "conectar" -> conectar(call.argument<String>("direccion") ?: "", result)

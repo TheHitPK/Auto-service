@@ -124,6 +124,8 @@ const _dtc = <String, String>{
   'P0741': 'Embrague del convertidor de par: no acopla',
   'P0750': 'Solenoide de cambio A: falla',
   'P0755': 'Solenoide de cambio B: falla',
+  'P1106': 'Sensor MAP: voltaje intermitente bajo',
+  'P1107': 'Sensor MAP: voltaje intermitente alto',
   'P1133': 'Sensor O2 (banco 1, sensor 1): conmutación insuficiente',
   'P1134': 'Sensor O2 (banco 1, sensor 1): relación de transición',
   'P1336': 'Sensor de cigüeñal: variación del sistema no aprendida',

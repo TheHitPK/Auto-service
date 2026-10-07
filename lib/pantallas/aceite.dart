@@ -14,7 +14,7 @@ class PantallaAceite extends StatefulWidget {
 }
 
 class _PantallaAceiteState extends State<PantallaAceite> {
-  String _tipo = 'mineral';
+  String _tipo = 'sintetico';
   String _viscosidad = viscosidades.keys.first;
   String _marca = marcasAceite.keys.first;
   final _otraMarca = TextEditingController();
@@ -35,13 +35,6 @@ class _PantallaAceiteState extends State<PantallaAceite> {
     final km = int.tryParse(_km.text) ?? 0;
     if (marca.isEmpty) return aviso(context, 'Escribe el nombre de la marca.');
     if (km <= 0) return aviso(context, 'Ingresa un kilometraje válido.');
-    final ultimo = app.ultimoRegistro(idAceite);
-    if (ultimo != null &&
-        ultimo.km >= km &&
-        !await confirmar(context,
-            'Ya hay un cambio registrado a los ${formatoKm(ultimo.km)} km. ¿Registrar igual?')) {
-      return;
-    }
     final intervalo = int.tryParse(_intervalo.text) ?? 0;
     await app.registrar(Registro(
       tipo: Registro.preventivo,

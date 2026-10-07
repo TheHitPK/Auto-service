@@ -7,6 +7,7 @@ import '../servicios/exportar.dart';
 import '../tema.dart';
 import '../widgets.dart';
 import 'aceite.dart';
+import 'combustible.dart';
 import 'config.dart';
 import 'diagnostico.dart';
 import 'historial.dart';
@@ -49,9 +50,17 @@ class PantallaInicio extends StatelessWidget {
 
   List<_Acceso> _accesos(BuildContext context, AppState app, ObdController obd) {
     final aceite = app.aceite;
-    final vencidos = app.vencidos;
+    final vencidos = app.alertas;
+    final tramos = app.tramos;
     final codigos = obd.cantidadCodigos ?? 0;
     return [
+      _Acceso(
+        Icons.local_gas_station,
+        'Combustible',
+        () => _abrir(context, const PantallaCombustible()),
+        insignia: tramos.isEmpty ? 'Sin datos' : '${formatoDecimal(tramos.last.kmL)} km/L',
+        color: tramos.isEmpty ? colorTenue : colorRendimiento(tramos.last.kmL, app),
+      ),
       _Acceso(
         Icons.oil_barrel,
         'Aceite',
@@ -63,7 +72,7 @@ class PantallaInicio extends StatelessWidget {
         Icons.build,
         'Mantenimientos',
         () => _abrir(context, const PantallaMantenimientos()),
-        insignia: vencidos == 0 ? 'Al día' : '$vencidos vencidos',
+        insignia: vencidos == 0 ? 'Al día' : '$vencidos por atender',
         color: vencidos == 0 ? colorOk : colorPeligro,
       ),
       _Acceso(
@@ -92,7 +101,7 @@ class PantallaInicio extends StatelessWidget {
         color: colorPrimario,
       ),
       _Acceso(Icons.settings, 'Configuración', () => _abrir(context, const PantallaConfig())),
-      _Acceso(Icons.ios_share, 'Exportar', () => exportarHistorial(context)),
+      _Acceso(Icons.ios_share, 'Exportar', () => _abrir(context, const PantallaExportar())),
       _Acceso(
         Icons.notifications,
         'Notificaciones',
@@ -134,10 +143,10 @@ class PantallaInicio extends StatelessWidget {
                 ),
               );
             }
-            // Horizontal: resumen a la izquierda y los 9 accesos llenando el alto.
+            // Horizontal: resumen a la izquierda y los 10 accesos en 5x2 llenando el alto.
             const anchoResumen = 300.0;
-            final ancho = (c.maxWidth - anchoResumen - 16 - hueco * 2) / 3;
-            final alto = ((c.maxHeight - hueco * 2) / 3).clamp(120.0, 220.0);
+            final ancho = (c.maxWidth - anchoResumen - 16 - hueco * 4) / 5;
+            final alto = ((c.maxHeight - hueco) / 2).clamp(120.0, 260.0);
             return Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -148,7 +157,7 @@ class PantallaInicio extends StatelessWidget {
                 const SizedBox(width: 16),
                 Expanded(
                   child: GridView.count(
-                    crossAxisCount: 3,
+                    crossAxisCount: 5,
                     mainAxisSpacing: hueco,
                     crossAxisSpacing: hueco,
                     childAspectRatio: ancho / alto,

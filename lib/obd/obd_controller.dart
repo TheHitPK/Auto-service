@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -17,6 +18,8 @@ class DatosVivos {
   int? velocidad;
   int? carga;
   int? acelerador;
+  int? tempAdmision;
+  int? presionAdmision;
   double? voltaje;
 }
 
@@ -42,18 +45,25 @@ class ObdController extends ChangeNotifier {
   TransporteObd? _transporte;
   int _sesion = 0;
 
+  /// Recibe cada lectura de velocidad (km/h), o null al perder la conexión.
+  void Function(int? kmh)? alVelocidad;
+
   bool get conectado => estado == EstadoObd.conectado;
   String get adaptador => _elm?.version ?? '';
 
   /// Pide los permisos de Bluetooth. La ubicación solo existe en el manifiesto
   /// para Android 11 o inferior, donde el escaneo BLE la exige.
   Future<bool> pedirPermisos() async {
+    // En iOS el sistema pide el permiso solo, al primer uso del Bluetooth.
+    if (!Platform.isAndroid) return true;
     final r = await [Permission.bluetoothConnect, Permission.bluetoothScan].request();
-    await Permission.locationWhenInUse.request();
+    if (await TransporteClasico.sdkAndroid() <= 30) await Permission.locationWhenInUse.request();
     return r.values.every((e) => e.isGranted);
   }
 
-  Future<List<DispositivoObd>> emparejados() => TransporteClasico.emparejados();
+  /// iOS no permite Bluetooth clásico a las apps: allí solo hay adaptadores BLE.
+  Future<List<DispositivoObd>> emparejados() async =>
+      Platform.isAndroid ? TransporteClasico.emparejados() : [];
 
   Future<DispositivoObd?> ultimoDispositivo() async {
     final prefs = await SharedPreferences.getInstance();
@@ -65,7 +75,8 @@ class ObdController extends ChangeNotifier {
   /// Al abrir la app en el estéreo: reconecta con el último adaptador sin preguntar.
   Future<void> reconectarUltimo() async {
     final ultimo = await ultimoDispositivo();
-    if (ultimo == null || !await Permission.bluetoothConnect.isGranted) return;
+    if (ultimo == null) return;
+    if (Platform.isAndroid && !await Permission.bluetoothConnect.isGranted) return;
     await conectar(ultimo);
   }
 
@@ -153,6 +164,8 @@ class ObdController extends ChangeNotifier {
         final vel = await elm.pid(0x0D);
         final carga = await elm.pid(0x04);
         final acel = await elm.pid(0x11);
+        final iat = await elm.pid(0x0F);
+        final map = await elm.pid(0x0B);
         final mil = await elm.pid(0x01);
         final voltaje = await elm.voltaje();
         if (sesion != _sesion) return;
@@ -162,7 +175,10 @@ class ObdController extends ChangeNotifier {
           ..velocidad = vel?[0]
           ..carga = carga != null ? (carga[0] * 100 / 255).round() : null
           ..acelerador = acel != null ? (acel[0] * 100 / 255).round() : null
+          ..tempAdmision = iat != null ? iat[0] - 40 : null
+          ..presionAdmision = map?[0]
           ..voltaje = voltaje;
+        if (vel != null) alVelocidad?.call(vel[0]);
         if (mil != null) {
           checkEngine = mil[0] & 0x80 != 0;
           cantidadCodigos = mil[0] & 0x7F;
@@ -196,6 +212,7 @@ class ObdController extends ChangeNotifier {
   }
 
   void _limpiar() {
+    alVelocidad?.call(null);
     datos = DatosVivos();
     checkEngine = null;
     cantidadCodigos = null;

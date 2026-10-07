@@ -29,6 +29,8 @@ ThemeData temaApp() {
   );
   final forma = RoundedRectangleBorder(borderRadius: BorderRadius.circular(14));
   const minimo = Size(64, 56);
+  // Angosto para que dos botones con icono quepan lado a lado en un teléfono.
+  const relleno = EdgeInsets.symmetric(horizontal: 12);
   const textoBoton = TextStyle(fontSize: 17, fontWeight: FontWeight.w600);
   final borde = OutlineInputBorder(
     borderRadius: BorderRadius.circular(14),
@@ -55,11 +57,17 @@ ThemeData temaApp() {
       ),
     ),
     filledButtonTheme: FilledButtonThemeData(
-      style: FilledButton.styleFrom(minimumSize: minimo, shape: forma, textStyle: textoBoton),
+      style: FilledButton.styleFrom(
+        minimumSize: minimo,
+        shape: forma,
+        textStyle: textoBoton,
+        padding: relleno,
+      ),
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
         minimumSize: minimo,
+        padding: relleno,
         shape: forma,
         textStyle: textoBoton,
         side: const BorderSide(color: colorBorde),

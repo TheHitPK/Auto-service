@@ -50,6 +50,8 @@ class TransporteClasico implements TransporteObd {
   static Future<bool> encendido() async =>
       await _metodos.invokeMethod<bool>('encendido') ?? false;
 
+  static Future<int> sdkAndroid() async => await _metodos.invokeMethod<int>('sdk') ?? 0;
+
   static Future<List<DispositivoObd>> emparejados() async {
     final lista = await _metodos.invokeListMethod<Map<dynamic, dynamic>>('emparejados') ?? [];
     return [

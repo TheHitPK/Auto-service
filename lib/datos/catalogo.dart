@@ -40,9 +40,25 @@ Servicio? servicioPorId(String id) {
 const modelos = ['LIMITED', 'DESIGN', 'ADVANCE'];
 
 const motores = {
+  'F16D3': 'F16D3 (1.6 L)',
   'F18D3': 'F18D3 (1.8 L)',
   'T18SED': 'T18SED (1.8 L) - Design / Advance',
 };
+
+class RangoConsumo {
+  const RangoConsumo(this.min, this.max, this.nombre);
+
+  /// En km/L.
+  final double min;
+  final double max;
+  final String nombre;
+}
+
+/// Rango normal de consumo por motor: valores orientativos del fabricante
+/// y de reportes reales, que el usuario puede cambiar en Configuración.
+RangoConsumo consumoEstandar(String motor) => motor.contains('16')
+    ? const RangoConsumo(7, 11, '1.6 L (F16D3)')
+    : const RangoConsumo(8, 12, '1.8 L (T18SED / F18D3)');
 
 const tiposAceite = {
   'mineral': 'Mineral',
@@ -86,30 +102,66 @@ const marcasAceite = {
 const sintomas = <String, (String, List<String>)>{
   'ralenti': (
     'Ralentí inestable',
-    ['Cuerpo aceleración sucio', 'Bujías viejas', 'MAF sucio', 'Fuga de vacío', 'CKP degradado'],
+    ['Cuerpo de aceleración sucio', 'Bujías viejas', 'MAF sucio', 'Fuga de vacío', 'CKP degradado'],
   ),
   'consumo': (
     'Alto consumo',
-    ['Sensor O2 desgastado', 'MAF sucio', 'Filtro aire obstruido', 'Inyectores sucios'],
+    [
+      'Sensor O2 desgastado',
+      'MAF sucio',
+      'Filtro de aire obstruido',
+      'Inyectores sucios',
+      'Presión de neumáticos',
+    ],
   ),
   'check': (
     'Check Engine',
-    ['Sensor O2 fallando', 'MAF/MAP erróneo', 'Bobina encendido', 'Sensor ECT', 'Tapa combustible'],
+    [
+      'Sensor O2 fallando',
+      'MAF/MAP erróneo',
+      'Bobina de encendido',
+      'Sensor ECT',
+      'Tapa de combustible floja',
+    ],
   ),
   'arranque': (
     'Dificultad arranque',
-    ['Sensor CKP defectuoso', 'Sensor CMP fallando', 'Bomba combustible', 'Batería'],
+    [
+      'Sensor CKP defectuoso',
+      'Sensor CMP fallando',
+      'Bomba de combustible',
+      'Batería baja',
+      'Inmovilizador',
+    ],
   ),
   'potencia': (
     'Pérdida potencia',
-    ['MAF sucio', 'Filtro combustible', 'Sensor O2 lento', 'Catalizador', 'Correa distribución'],
+    [
+      'MAF sucio',
+      'Filtro de combustible',
+      'Sensor O2 lento',
+      'Catalizador obstruido',
+      'Correa de distribución',
+    ],
   ),
-  'tirones': ('Tirones', ['Bujías viejas', 'Bobina defectuosa', 'Inyectores', 'TPS sucio']),
-  'calor': ('Sobrecalentamiento', ['Sensor ECT', 'Termostato', 'Ventilador', 'Refrigerante bajo']),
+  'tirones': (
+    'Tirones',
+    ['Bujías viejas', 'Bobina defectuosa', 'Inyectores sucios', 'TPS sucio', 'Cables de bujía'],
+  ),
+  'calor': (
+    'Sobrecalentamiento',
+    ['Sensor ECT', 'Termostato', 'Ventilador no funciona', 'Refrigerante bajo', 'Radiador obstruido'],
+  ),
   'humo': (
     'Humo negro',
-    ['MAF sucio', 'Inyectores fuga', 'Regulador presión', 'Sensor O2 corto'],
+    ['MAF sucio', 'Inyectores con fuga', 'Regulador de presión', 'Sensor O2 en corto'],
   ),
-  'olfato': ('Olor a gasolina', ['Fuga combustible', 'Sello inyector', 'Canister saturado']),
-  'ventilador': ('Ventilador no enciende', ['Sensor ECT', 'Relay', 'Motor ventilador', 'Fusible']),
+  'olfato': (
+    'Olor a gasolina',
+    ['Fuga de combustible', 'Sello de inyector', 'Canister saturado', 'Tapa de tanque'],
+  ),
+  'ventilador': (
+    'Ventilador no enciende',
+    ['Sensor ECT', 'Relay del ventilador', 'Motor del ventilador', 'Fusible'],
+  ),
 };
