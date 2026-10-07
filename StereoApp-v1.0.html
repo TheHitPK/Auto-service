@@ -1,0 +1,1642 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>StereoApp v1.0 - Dashboard</title>
+    <style>
+        /* ===== TODOS LOS ESTILOS (los mismos que antes) ===== */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+            background: #f0f4f8;
+            color: #1e293b;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .container {
+            max-width: 700px;
+            width: 100%;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            background: #f0f4f8;
+        }
+        .app-header {
+            background: linear-gradient(145deg, #0a334e, #0b3b5c);
+            color: white;
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+            z-index: 10;
+            min-height: 56px;
+        }
+        .app-header .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .app-header .header-title {
+            font-weight: 700;
+            font-size: 1.2rem;
+            letter-spacing: 0.5px;
+        }
+        .app-header .header-title small {
+            font-weight: 400;
+            font-size: 0.7rem;
+            opacity: 0.8;
+            margin-left: 4px;
+        }
+        .btn-home {
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: white;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex-shrink: 0;
+            padding: 4px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        .btn-home:active { transform: scale(0.92); background: rgba(255,255,255,0.2); }
+        .btn-home svg {
+            width: 38px;
+            height: 38px;
+            display: block;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+        }
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .header-badge {
+            background: rgba(255,255,255,0.15);
+            padding: 4px 12px;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            backdrop-filter: blur(4px);
+        }
+        .led-mini {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #94a3b8;
+            display: inline-block;
+            box-shadow: 0 0 6px rgba(0,0,0,0.2);
+        }
+        .led-mini.on { background: #4ade80; box-shadow: 0 0 12px #4ade80; }
+        .page-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            padding-bottom: 30px;
+        }
+        .page {
+            display: none;
+            animation: fadeIn 0.25s ease;
+        }
+        .page.active { display: block; }
+        @keyframes fadeIn {
+            0% { opacity: 0; transform: translateY(12px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        .card {
+            background: white;
+            border-radius: 24px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.05);
+        }
+        .card-title {
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .card-subtitle {
+            font-size: 0.85rem;
+            color: #64748b;
+            margin-bottom: 12px;
+        }
+        .vehicle-id-card {
+            background: linear-gradient(145deg, #0b3b5c, #0a2d47);
+            color: white;
+            border-radius: 20px;
+            padding: 16px 20px;
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            box-shadow: 0 8px 24px rgba(11, 59, 92, 0.3);
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        .vehicle-id-card .vehicle-info {
+            display: flex;
+            flex-direction: column;
+        }
+        .vehicle-id-card .vehicle-model {
+            font-weight: 800;
+            font-size: 1.3rem;
+            letter-spacing: 0.5px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .vehicle-id-card .vehicle-plate {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            font-weight: 500;
+        }
+        .vehicle-id-card .vehicle-engine {
+            background: rgba(255,255,255,0.15);
+            padding: 6px 16px;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(4px);
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+            margin-top: 8px;
+        }
+        .nav-tile {
+            background: white;
+            border-radius: 20px;
+            padding: 14px 6px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+            border: 1px solid #eef2f6;
+            transition: all 0.15s;
+            cursor: pointer;
+            user-select: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+        }
+        .nav-tile:active {
+            transform: scale(0.94);
+            background: #f8fafc;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .nav-tile .icon {
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .nav-tile .icon svg {
+            width: 40px;
+            height: 40px;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+        }
+        .nav-tile .label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #1e293b;
+            line-height: 1.2;
+        }
+        .nav-tile .badge-mini {
+            background: #e2e8f0;
+            border-radius: 30px;
+            padding: 0 10px;
+            font-size: 0.6rem;
+            font-weight: 700;
+            color: #0b3b5c;
+            line-height: 1.6;
+        }
+        .nav-tile .badge-mini.danger { background: #fee2e2; color: #991b1b; }
+        .nav-tile .badge-mini.warning { background: #fffbeb; color: #b45309; }
+        .stats-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        .stat-item {
+            background: white;
+            border-radius: 16px;
+            padding: 10px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            border: 1px solid #eef2f6;
+        }
+        .stat-item .num {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: #0b3b5c;
+        }
+        .stat-item .lbl {
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            color: #64748b;
+            letter-spacing: 0.3px;
+        }
+        .btn {
+            display: inline-block;
+            background: #1e6f9f;
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 40px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: 100%;
+            text-align: center;
+            margin-top: 6px;
+            box-shadow: 0 2px 8px rgba(30,111,159,0.2);
+        }
+        .btn:active { transform: scale(0.96); }
+        .btn-secondary { background: #e2e8f0; color: #1e293b; box-shadow: none; }
+        .btn-success { background: #2b7a4b; box-shadow: 0 2px 8px rgba(43,122,75,0.2); }
+        .btn-danger { background: #b13e3e; box-shadow: 0 2px 8px rgba(177,62,62,0.2); }
+        .btn-warning { background: #d69e2e; box-shadow: 0 2px 8px rgba(214,158,46,0.2); }
+        .btn-obd { background: #2d3748; box-shadow: 0 2px 8px rgba(45,55,72,0.2); }
+        .btn-obd.connected { background: #2b7a4b; }
+        .btn-noti { background: #7c3aed; box-shadow: 0 2px 8px rgba(124,58,237,0.2); }
+        .btn-noti.on { background: #2b7a4b; }
+        .flex { display: flex; gap: 8px; flex-wrap: wrap; }
+        .flex .btn { flex: 1; }
+        .input-group { margin-bottom: 16px; }
+        .input-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 4px;
+            font-size: 0.9rem;
+            color: #1e293b;
+        }
+        .input-group label .required {
+            color: #b13e3e;
+            margin-left: 2px;
+        }
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 30px;
+            font-size: 1rem;
+            background: #f8fafc;
+            transition: border 0.2s;
+        }
+        .input-group input:focus, .input-group select:focus {
+            border-color: #1e6f9f;
+            outline: none;
+        }
+        .input-group .hint {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            margin-top: 4px;
+        }
+        .text-muted { color: #64748b; font-size: 0.9rem; }
+        .mt-2 { margin-top: 12px; }
+        .mb-2 { margin-bottom: 12px; }
+        .oculto { display: none; }
+        .servicio-item {
+            background: #f8fafc;
+            border-radius: 14px;
+            padding: 12px 16px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 6px solid #1e6f9f;
+        }
+        .servicio-item.done { border-left-color: #2b7a4b; opacity: 0.7; }
+        .servicio-item .nombre { font-weight: 600; }
+        .servicio-item .intervalo { font-size: 0.8rem; color: #64748b; }
+        .servicio-item .fecha { font-size: 0.8rem; color: #0b3b5c; }
+        .historial-item {
+            border-bottom: 1px solid #e9edf3;
+            padding: 12px 0;
+        }
+        .historial-item:last-child { border-bottom: none; }
+        .tag {
+            background: #dbeafe;
+            color: #1e4b7a;
+            border-radius: 30px;
+            padding: 2px 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        .tag.correctivo { background: #fee2e2; color: #991b1b; }
+        .sintomas-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .sintoma-item {
+            background: #f1f5f9;
+            border-radius: 40px;
+            padding: 8px 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+            user-select: none;
+            font-weight: 500;
+        }
+        .sintoma-item.active {
+            background: #dbeafe;
+            border-color: #1e6f9f;
+            font-weight: 600;
+        }
+        .sintoma-item.active::after { content: " ✓"; color: #1e6f9f; }
+        .diagnostico-resultado {
+            background: #f1f5f9;
+            border-radius: 16px;
+            padding: 16px;
+            margin-top: 12px;
+            border-left: 6px solid #d69e2e;
+        }
+        .diagnostico-resultado ul { margin-left: 18px; margin-top: 6px; }
+        .diagnostico-resultado li { margin-bottom: 4px; }
+        .obd-datos {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin: 12px 0;
+        }
+        .obd-dato {
+            background: #f8fafc;
+            border-radius: 14px;
+            padding: 12px;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+        }
+        .obd-dato .valor {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #0b3b5c;
+        }
+        .obd-dato .etiqueta {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            color: #64748b;
+        }
+        .obd-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 16px;
+            background: #f1f5f9;
+            border-radius: 40px;
+        }
+        .led {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #94a3b8;
+            display: inline-block;
+        }
+        .led.on { background: #2b7a4b; box-shadow: 0 0 12px #2b7a4b; }
+        .led.error { background: #b13e3e; box-shadow: 0 0 12px #b13e3e; }
+        .dtc-item {
+            background: #fef2f2;
+            border-radius: 10px;
+            padding: 8px 14px;
+            margin-bottom: 6px;
+            border-left: 4px solid #b13e3e;
+            font-family: monospace;
+        }
+        .dtc-item .desc { font-family: sans-serif; font-weight: 500; color: #991b1b; }
+        .contador-aceite {
+            background: #f8fafc;
+            border-radius: 14px;
+            padding: 16px;
+            border-left: 6px solid #2b7a4b;
+        }
+        .contador-aceite.warning { border-left-color: #d69e2e; background: #fffbeb; }
+        .contador-aceite.danger { border-left-color: #b13e3e; background: #fef2f2; }
+        .contador-aceite .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 6px;
+        }
+        .contador-aceite .detalle-aceite {
+            font-size: 0.8rem;
+            color: #475569;
+            margin-top: 6px;
+            padding: 8px 12px;
+            background: #f1f5f9;
+            border-radius: 10px;
+        }
+        .status-noti {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            border-radius: 40px;
+            background: #f1f5f9;
+            font-size: 0.9rem;
+        }
+        .status-noti .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #94a3b8;
+        }
+        .status-noti .dot.active { background: #2b7a4b; }
+        .status-noti .dot.denied { background: #b13e3e; }
+    </style>
+</head>
+<body>
+<div class="container" id="app">
+
+    <!-- ===== HEADER ===== -->
+    <header class="app-header">
+        <div class="header-left">
+            <button class="btn-home" id="btnHome" onclick="showPage('dashboard')" aria-label="Inicio">
+                <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <ellipse cx="50" cy="87" rx="34" ry="5" fill="rgba(0,0,0,0.25)" filter="blur(2px)"/>
+                    <path d="M15 39 L85 39 L93 46 L96 65 L92 80 L82 85 L18 85 L8 80 L4 65 L7 46 L15 39Z" fill="url(#carroceria)" stroke="#ffffff" stroke-width="1.5"/>
+                    <path d="M15 39 L85 39 L90 44 L10 44 L15 39" fill="#123a54" stroke="#ffffff" stroke-width="1"/>
+                    <path d="M29 32 L71 32 L78 39 L22 39 L29 32" fill="url(#vidrio)" stroke="#ffffff" stroke-width="1.2"/>
+                    <path d="M13 42 L32 40 L36 50 L15 52 L13 42" fill="url(#faro)" stroke="#ffffff" stroke-width="1.3"/>
+                    <circle cx="20" cy="46" r="2.2" fill="white" opacity="0.65"/>
+                    <path d="M87 42 L68 40 L64 50 L85 52 L87 42" fill="url(#faro)" stroke="#ffffff" stroke-width="1.3"/>
+                    <circle cx="80" cy="46" r="2.2" fill="white" opacity="0.65"/>
+                    <path d="M31 48 L46 47 L46 60 L31 61 L31 48" fill="#0f1720" stroke="#ffffff" stroke-width="1.2"/>
+                    <path d="M69 48 L54 47 L54 60 L69 61 L69 48" fill="#0f1720" stroke="#ffffff" stroke-width="1.2"/>
+                    <path d="M46 46.5 L54 46.5 L55 60.5 L45 60.5 L46 46.5" fill="url(#chrome)" stroke="#ffffff" stroke-width="1"/>
+                    <path d="M42 51 L50 55 L42 59 L44 55 Z M58 51 L50 55 L58 59 L56 55 Z" fill="#facc15" stroke="#92400e" stroke-width="0.6"/>
+                    <rect x="34" y="66" width="32" height="3.5" rx="1.5" fill="#0f1720" opacity="0.8"/>
+                    <circle cx="26" cy="77" r="8.5" fill="#1e293b" stroke="#ffffff" stroke-width="2"/>
+                    <circle cx="26" cy="77" r="3.2" fill="#64748b"/>
+                    <circle cx="74" cy="77" r="8.5" fill="#1e293b" stroke="#ffffff" stroke-width="2"/>
+                    <circle cx="74" cy="77" r="3.2" fill="#64748b"/>
+                    <defs>
+                        <linearGradient id="carroceria" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="#2d7b9f"/>
+                            <stop offset="100%" stop-color="#0b3b5c"/>
+                        </linearGradient>
+                        <linearGradient id="faro" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="#fef08a"/>
+                            <stop offset="100%" stop-color="#ca8a04"/>
+                        </linearGradient>
+                        <linearGradient id="vidrio" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="#60a5fa"/>
+                            <stop offset="100%" stop-color="#1e3a5f"/>
+                        </linearGradient>
+                        <linearGradient id="chrome" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="#f8fafc"/>
+                            <stop offset="50%" stop-color="#94a3b8"/>
+                            <stop offset="100%" stop-color="#e2e8f0"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+            </button>
+            <span class="header-title" id="mainTitle">StereoApp <small>v1.0</small></span>
+        </div>
+        <div class="header-right">
+            <span class="led-mini" id="headerLed"></span>
+            <span class="header-badge" id="headerKm">0 km</span>
+        </div>
+    </header>
+
+    <!-- ===== CONTENEDOR DE PÁGINAS ===== -->
+    <div class="page-container" id="pageContainer">
+
+        <!-- PÁGINA 1: DASHBOARD -->
+        <div class="page active" id="page-dashboard">
+            <div class="vehicle-id-card" id="vehicleIdCard">
+                <div class="vehicle-info">
+                    <span class="vehicle-model" id="dashModelo">DESIGN</span>
+                    <span class="vehicle-plate" id="dashPlaca">📋 ABC-123</span>
+                </div>
+                <span class="vehicle-engine" id="dashMotorDisplay">T18SED</span>
+            </div>
+
+            <div class="stats-row">
+                <div class="stat-item">
+                    <div class="num" id="dashKm">0</div>
+                    <div class="lbl">Kilómetros</div>
+                </div>
+                <div class="stat-item">
+                    <div class="num" id="dashAceiteDias">-</div>
+                    <div class="lbl">Días aceite</div>
+                </div>
+                <div class="stat-item">
+                    <div class="num" id="dashAceiteKm">-</div>
+                    <div class="lbl">Km aceite</div>
+                </div>
+            </div>
+
+            <div class="dashboard-grid">
+                <div class="nav-tile" onclick="showPage('aceite')">
+                    <div class="icon">
+                        <svg viewBox="0 0 40 40" fill="none">
+                            <rect x="8" y="16" width="24" height="16" rx="3" fill="#cbd5e1" stroke="#1e293b" stroke-width="1.8"/>
+                            <rect x="8" y="16" width="24" height="5" rx="1" fill="#94a3b8" stroke="#1e293b" stroke-width="1.5"/>
+                            <path d="M28 18 L34 12 L32 10 L26 16 L28 18" fill="#475569" stroke="#1e293b" stroke-width="1.5"/>
+                            <path d="M32 10 L35 13 L33 15 L30 12 L32 10" fill="#f59e0b" stroke="#1e293b" stroke-width="1.2"/>
+                            <rect x="12" y="23" width="16" height="6" rx="1" fill="#1e6f9f"/>
+                            <text x="14" y="28" font-size="5" font-weight="bold" fill="white" font-family="sans-serif">OIL</text>
+                            <rect x="10" y="18" width="4" height="12" rx="1" fill="white" opacity="0.3"/>
+                        </svg>
+                    </div>
+                    <span class="label">Aceite</span>
+                    <span class="badge-mini" id="tileAceiteBadge">-</span>
+                </div>
+                <div class="nav-tile" onclick="showPage('mantenimientos')">
+                    <div class="icon">
+                        <svg viewBox="0 0 40 40" fill="none">
+                            <path d="M12 8 L26 30" stroke="#475569" stroke-width="4.5" stroke-linecap="round"/>
+                            <path d="M12 8 L26 30" stroke="#1e293b" stroke-width="1.8" stroke-linecap="round"/>
+                            <circle cx="10" cy="6" r="5" fill="none" stroke="#475569" stroke-width="3.5"/>
+                            <circle cx="10" cy="6" r="5" fill="none" stroke="#1e293b" stroke-width="1.5"/>
+                            <circle cx="28" cy="32" r="5" fill="none" stroke="#475569" stroke-width="3.5"/>
+                            <circle cx="28" cy="32" r="5" fill="none" stroke="#1e293b" stroke-width="1.5"/>
+                            <path d="M28 8 L12 30" stroke="#94a3b8" stroke-width="4.5" stroke-linecap="round"/>
+                            <path d="M28 8 L12 30" stroke="#1e293b" stroke-width="1.8" stroke-linecap="round"/>
+                            <circle cx="30" cy="6" r="5" fill="none" stroke="#94a3b8" stroke-width="3.5"/>
+                            <circle cx="30" cy="6" r="5" fill="none" stroke="#1e293b" stroke-width="1.5"/>
+                            <circle cx="10" cy="32" r="5" fill="none" stroke="#94a3b8" stroke-width="3.5"/>
+                            <circle cx="10" cy="32" r="5" fill="none" stroke="#1e293b" stroke-width="1.5"/>
+                        </svg>
+                    </div>
+                    <span class="label">Mantenimientos</span>
+                    <span class="badge-mini" id="tileMantBadge">0</span>
+                </div>
+                <div class="nav-tile" onclick="showPage('obd')">
+                    <div class="icon">
+                        <svg viewBox="0 0 40 40" fill="none">
+                            <rect x="6" y="12" width="28" height="16" rx="4" fill="#2d3748" stroke="#1e293b" stroke-width="1.5"/>
+                            <rect x="10" y="16" width="5" height="3" rx="1" fill="#4ade80"/>
+                            <rect x="17" y="16" width="5" height="3" rx="1" fill="#4ade80"/>
+                            <rect x="24" y="16" width="5" height="3" rx="1" fill="#4ade80"/>
+                            <rect x="10" y="22" width="5" height="3" rx="1" fill="#f87171"/>
+                            <rect x="17" y="22" width="5" height="3" rx="1" fill="#f87171"/>
+                            <rect x="24" y="22" width="5" height="3" rx="1" fill="#f87171"/>
+                            <path d="M20 30 L20 34" stroke="#1e293b" stroke-width="1.5"/>
+                            <circle cx="20" cy="35" r="2" fill="#1e293b"/>
+                        </svg>
+                    </div>
+                    <span class="label">OBD-II</span>
+                    <span class="badge-mini" id="tileOBDStatus">Off</span>
+                </div>
+                <div class="nav-tile" onclick="showPage('diagnostico')">
+                    <div class="icon">
+                        <svg viewBox="0 0 40 40" fill="none">
+                            <circle cx="20" cy="20" r="14" stroke="#1e293b" stroke-width="1.8" fill="#f1f5f9"/>
+                            <path d="M14 20 L18 20 L20 14 L22 20 L26 20" stroke="#1e293b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <circle cx="20" cy="24" r="2" fill="#d69e2e"/>
+                            <path d="M20 26 L20 32" stroke="#1e293b" stroke-width="1.8" stroke-linecap="round"/>
+                            <circle cx="20" cy="34" r="1.5" fill="#1e293b"/>
+                            <path d="M10 20 L6 20" stroke="#1e293b" stroke-width="1.5" stroke-linecap="round"/>
+                            <path d="M30 20 L34 20" stroke="#1e293b" stroke-width="1.5" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    <span class="label">Diagnóstico</span>
+                </div>
+                <div class="nav-tile" onclick="showPage('registrar')">
+                    <div class="icon">
+                        <svg viewBox="0 0 40 40" fill="none">
+                            <rect x="8" y="8" width="24" height="24" rx="4" fill="white" stroke="#1e293b" stroke-width="1.8"/>
+                            <line x1="12" y1="16" x2="28" y2="16" stroke="#1e293b" stroke-width="1.5" stroke-linecap="round"/>
+                            <line x1="12" y1="22" x2="28" y2="22" stroke="#1e293b" stroke-width="1.5" stroke-linecap="round"/>
+                            <line x1="12" y1="28" x2="22" y2="28" stroke="#1e293b" stroke-width="1.5" stroke-linecap="round"/>
+                            <path d="M28 6 L34 10 L28 14 L28 6Z" fill="#fbbf24" stroke="#1e293b" stroke-width="1.2"/>
+                            <path d="M30 8 L32 10 L36 6" stroke="#2b7a4b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <rect x="12" y="4" width="16" height="4" rx="1" fill="#e2e8f0" stroke="#1e293b" stroke-width="1.2"/>
+                        </svg>
+                    </div>
+                    <span class="label">Registrar</span>
+                </div>
+                <div class="nav-tile" onclick="showPage('historial')">
+                    <div class="icon">
+                        <svg viewBox="0 0 40 40" fill="none">
+                            <circle cx="20" cy="18" r="12" stroke="#1e293b" stroke-width="1.8" fill="white"/>
+                            <circle cx="20" cy="18" r="2" fill="#1e293b"/>
+                            <path d="M20 8 L20 18 L28 22" stroke="#1e293b" stroke-width="1.8" stroke-linecap="round"/>
+                            <line x1="10" y1="30" x2="30" y2="30" stroke="#1e293b" stroke-width="1.8" stroke-linecap="round"/>
+                            <line x1="12" y1="34" x2="28" y2="34" stroke="#1e293b" stroke-width="1.8" stroke-linecap="round"/>
+                            <line x1="14" y1="38" x2="26" y2="38" stroke="#1e293b" stroke-width="1.8" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    <span class="label">Historial</span>
+                </div>
+                <div class="nav-tile" onclick="showPage('config')">
+                    <div class="icon">
+                        <svg viewBox="0 0 40 40" fill="none">
+                            <circle cx="20" cy="20" r="10" stroke="#1e293b" stroke-width="2" fill="url(#engranaje)"/>
+                            <circle cx="20" cy="20" r="4" fill="#1e293b" opacity="0.15"/>
+                            <path d="M20 6 L20 10" stroke="#1e293b" stroke-width="2.5" stroke-linecap="round"/>
+                            <path d="M30 10 L28 14" stroke="#1e293b" stroke-width="2.5" stroke-linecap="round"/>
+                            <path d="M34 20 L30 20" stroke="#1e293b" stroke-width="2.5" stroke-linecap="round"/>
+                            <path d="M30 30 L26 26" stroke="#1e293b" stroke-width="2.5" stroke-linecap="round"/>
+                            <path d="M20 34 L20 30" stroke="#1e293b" stroke-width="2.5" stroke-linecap="round"/>
+                            <path d="M10 30 L14 26" stroke="#1e293b" stroke-width="2.5" stroke-linecap="round"/>
+                            <path d="M6 20 L10 20" stroke="#1e293b" stroke-width="2.5" stroke-linecap="round"/>
+                            <path d="M10 10 L14 14" stroke="#1e293b" stroke-width="2.5" stroke-linecap="round"/>
+                            <defs>
+                                <linearGradient id="engranaje" x1="0" y1="0" x2="1" y2="1">
+                                    <stop offset="0%" stop-color="#94a3b8"/>
+                                    <stop offset="100%" stop-color="#475569"/>
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                    </div>
+                    <span class="label">Configuración</span>
+                </div>
+                <div class="nav-tile" onclick="showPage('exportar')">
+                    <div class="icon">
+                        <svg viewBox="0 0 40 40" fill="none">
+                            <rect x="6" y="16" width="28" height="18" rx="3" fill="white" stroke="#1e293b" stroke-width="1.5"/>
+                            <line x1="12" y1="22" x2="28" y2="22" stroke="#1e293b" stroke-width="1.8" stroke-linecap="round"/>
+                            <line x1="12" y1="28" x2="24" y2="28" stroke="#1e293b" stroke-width="1.8" stroke-linecap="round"/>
+                            <path d="M20 4 L20 14" stroke="#1e293b" stroke-width="2.5" stroke-linecap="round"/>
+                            <path d="M16 10 L20 14 L24 10" stroke="#1e293b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <span class="label">Exportar</span>
+                </div>
+                <div class="nav-tile" id="notiTile" onclick="solicitarNotificaciones()">
+                    <div class="icon">
+                        <svg viewBox="0 0 40 40" fill="none">
+                            <path d="M20 6 C14 6 12 12 12 16 L12 24 L10 28 L30 28 L28 24 L28 16 C28 12 26 6 20 6Z" fill="#e2e8f0" stroke="#1e293b" stroke-width="1.8"/>
+                            <path d="M20 32 C18 32 16 30 16 28 L24 28 C24 30 22 32 20 32Z" fill="#1e293b" stroke="#1e293b" stroke-width="1.2"/>
+                            <circle cx="28" cy="10" r="4" fill="#f87171" stroke="#1e293b" stroke-width="1.2"/>
+                            <path d="M26 8 L28 10 L30 8" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M26 12 L28 10 L30 12" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <span class="label">Notificaciones</span>
+                    <span class="badge-mini" id="tileNotiBadge">Off</span>
+                </div>
+            </div>
+
+            <div class="card mt-2" style="padding:12px;">
+                <div class="status-noti">
+                    <span class="dot" id="dashDotNoti"></span>
+                    <span id="dashTextNoti">Notificaciones: --</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- PÁGINA 2: ACEITE -->
+        <div class="page" id="page-aceite">
+            <div class="card">
+                <div class="card-title">🛢️ Detalle del Cambio de Aceite</div>
+                <div id="contadorAceiteContainer" class="contador-aceite">
+                    <div style="display: flex; justify-content: space-between;">
+                        <strong>Último cambio</strong>
+                        <span class="badge" id="estadoAceiteBadge">No registrado</span>
+                    </div>
+                    <div class="grid-2">
+                        <div>📅 <span id="diasAceite">-</span> días</div>
+                        <div>📏 <span id="kmAceite">-</span> km</div>
+                    </div>
+                    <div id="detalleAceiteInfo" class="detalle-aceite">
+                        <span id="tipoAceiteMostrar">-</span> · 
+                        <span id="viscosidadMostrar">-</span> · 
+                        <span id="marcaAceiteMostrar">-</span>
+                    </div>
+                    <div style="font-size:0.9rem; margin-top:6px;" id="recomendacionAceite"></div>
+                </div>
+                <p class="text-muted mt-2">Los intervalos sugeridos son: Mineral 5,000 km | Semisintético 7,000 km | Sintético 10,000 km</p>
+            </div>
+
+            <div class="card">
+                <div class="card-title">📝 Registrar Cambio de Aceite</div>
+                <p class="card-subtitle">Completa los datos del aceite que estás usando.</p>
+
+                <div class="input-group">
+                    <label>Tipo de Aceite <span class="required">*</span></label>
+                    <select id="tipoAceiteSelect">
+                        <option value="mineral">Mineral</option>
+                        <option value="semisintetico">Semisintético</option>
+                        <option value="sintetico">Sintético</option>
+                    </select>
+                    <div class="hint">Mineral: 5,000 km | Semisintético: 7,000 km | Sintético: 10,000 km</div>
+                </div>
+
+                <div class="input-group">
+                    <label>Viscosidad (SAE) <span class="required">*</span></label>
+                    <select id="viscosidadSelect">
+                        <option value="15W-40">15W-40 (Recomendado para Optra en Venezuela)</option>
+                        <option value="10W-30">10W-30</option>
+                        <option value="5W-30">5W-30</option>
+                        <option value="20W-50">20W-50</option>
+                    </select>
+                    <div class="hint">El manual del Optra sugiere 15W-40 o 10W-30</div>
+                </div>
+
+                <div class="input-group">
+                    <label>Marca del Aceite <span class="required">*</span></label>
+                    <select id="marcaAceiteSelect">
+                        <option value="Ultralub">Ultralub (Venezuela) ⭐ Recomendado</option>
+                        <option value="Shell">Shell (Internacional)</option>
+                        <option value="Motul">Motul (Internacional)</option>
+                        <option value="Inca">Inca (Venezuela)</option>
+                        <option value="Castrol">Castrol (Internacional)</option>
+                        <option value="Mobil">Mobil (Internacional)</option>
+                        <option value="Valvoline">Valvoline (Internacional)</option>
+                        <option value="PDV">PDV (Venezuela)</option>
+                        <option value="Gulf">Gulf (Internacional)</option>
+                        <option value="KRS">KRS (Venezuela)</option>
+                        <option value="LMV">LMV (Venezuela)</option>
+                        <option value="Sky">Sky (Venezuela)</option>
+                        <option value="Vtech">Vtech (Internacional)</option>
+                        <option value="otra">Otra...</option>
+                    </select>
+                </div>
+
+                <div class="input-group oculto" id="otraMarcaGroup">
+                    <label>Especifica la marca <span class="required">*</span></label>
+                    <input type="text" id="otraMarcaInput" placeholder="Ej: Liqui Moly, Wolf, etc.">
+                </div>
+
+                <div class="input-group">
+                    <label>Kilometraje al momento del cambio <span class="required">*</span></label>
+                    <input type="number" id="kmAceiteInput" placeholder="Ej: 45000">
+                </div>
+
+                <div class="input-group">
+                    <label>Intervalo de cambio (km) <span class="required">*</span></label>
+                    <input type="number" id="intervaloAceiteInput" placeholder="Ej: 5000">
+                    <div class="hint">Se sugiere según el tipo: Mineral 5,000 | Semisintético 7,000 | Sintético 10,000</div>
+                </div>
+
+                <button class="btn btn-success" id="btnRegistrarAceite">🛢️ Registrar Cambio de Aceite</button>
+            </div>
+        </div>
+
+        <!-- PÁGINA 3: MANTENIMIENTOS -->
+        <div class="page" id="page-mantenimientos">
+            <div class="card">
+                <div class="card-title">🔧 Próximos Servicios</div>
+                <div id="proximosServicios"><p class="text-muted">Cargando...</p></div>
+            </div>
+        </div>
+
+        <!-- PÁGINA 4: OBD-II -->
+        <div class="page" id="page-obd">
+            <div class="card" style="border: 2px solid #2d3748;">
+                <div class="card-title">📡 OBD-II Bluetooth</div>
+                <div class="obd-status">
+                    <span class="led" id="ledOBD"></span>
+                    <span id="estadoOBD" style="font-weight:600;">Desconectado</span>
+                </div>
+                <div class="flex">
+                    <button class="btn btn-obd" id="btnConectarOBD">🔗 Conectar</button>
+                    <button class="btn btn-secondary" id="btnDesconectarOBD" disabled>Desconectar</button>
+                    <button class="btn btn-secondary" id="btnLeerDTC" disabled>📋 DTC</button>
+                </div>
+                <div id="datosOBD" class="obd-datos oculto">
+                    <div class="obd-dato"><div class="valor" id="rpmValor">---</div><div class="etiqueta">RPM</div></div>
+                    <div class="obd-dato"><div class="valor" id="tempValor">---</div><div class="etiqueta">Temp.</div></div>
+                    <div class="obd-dato"><div class="valor" id="speedValor">---</div><div class="etiqueta">Velocidad</div></div>
+                    <div class="obd-dato"><div class="valor" id="loadValor">---</div><div class="etiqueta">Carga %</div></div>
+                </div>
+                <div id="dtcContainer" class="mt-2"></div>
+                <p class="text-muted" style="font-size:0.7rem; margin-top:8px;">Requiere HTTPS y adaptador BLE.</p>
+            </div>
+        </div>
+
+        <!-- PÁGINA 5: DIAGNÓSTICO -->
+        <div class="page" id="page-diagnostico">
+            <div class="card">
+                <div class="card-title">🔍 Diagnóstico por Síntomas</div>
+                <p class="text-muted">Selecciona los síntomas que presenta tu auto.</p>
+                <div class="sintomas-grid" id="sintomasContainer"></div>
+                <button class="btn btn-warning" id="btnDiagnosticar" style="margin-top:12px;">🩺 Diagnosticar</button>
+                <div id="resultadoDiagnostico" class="diagnostico-resultado oculto">
+                    <strong>🔎 Posibles causas:</strong>
+                    <div id="contenidoDiagnostico"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PÁGINA 6: REGISTRAR -->
+        <div class="page" id="page-registrar">
+            <div class="card">
+                <div class="card-title">📌 Registrar Mantenimiento</div>
+                <div class="input-group">
+                    <label>Tipo</label>
+                    <select id="tipoMant">
+                        <option value="preventivo">Preventivo (planificado)</option>
+                        <option value="correctivo">Correctivo (reparación)</option>
+                    </select>
+                </div>
+                <div id="camposPreventivo">
+                    <div class="input-group">
+                        <label>Servicio / Sensor</label>
+                        <select id="servicioPreventivo"></select>
+                    </div>
+                </div>
+                <div id="camposCorrectivo" class="oculto">
+                    <div class="input-group">
+                        <label>Descripción</label>
+                        <input type="text" id="descCorrectivo" placeholder="Ej: Cambio de bobina">
+                    </div>
+                    <div class="input-group">
+                        <label>Costo</label>
+                        <input type="text" id="costoCorrectivo" placeholder="$ 0.00">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Kilometraje</label>
+                    <input type="number" id="kmServicio" placeholder="km actual">
+                </div>
+                <button class="btn btn-success" id="btnRegistrar">✔️ Registrar</button>
+            </div>
+        </div>
+
+        <!-- PÁGINA 7: HISTORIAL -->
+        <div class="page" id="page-historial">
+            <div class="card">
+                <div class="card-title">📜 Historial de Servicios</div>
+                <div class="flex mb-2">
+                    <button class="btn btn-secondary" id="btnFiltroTodos" style="flex:1;">Todos</button>
+                    <button class="btn btn-secondary" id="btnFiltroPreventivo" style="flex:1;">Preventivos</button>
+                    <button class="btn btn-secondary" id="btnFiltroCorrectivo" style="flex:1;">Correctivos</button>
+                </div>
+                <div id="listaHistorial"><p class="text-muted">No hay registros.</p></div>
+                <button class="btn btn-danger" id="btnBorrarHistorial" style="margin-top:16px;">🗑️ Borrar todo</button>
+            </div>
+        </div>
+
+        <!-- PÁGINA 8: CONFIGURACIÓN -->
+        <div class="page" id="page-config">
+            <div class="card">
+                <div class="card-title">⚙️ Configuración del Vehículo</div>
+                <div class="input-group">
+                    <label>Modelo / Versión</label>
+                    <select id="modeloSelect">
+                        <option value="LIMITED">LIMITED</option>
+                        <option value="DESIGN">DESIGN</option>
+                        <option value="ADVANCE">ADVANCE</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Placa (Matrícula)</label>
+                    <input type="text" id="placaInput" placeholder="Ej: ABC-123" maxlength="10" style="text-transform:uppercase;">
+                </div>
+                <div class="input-group">
+                    <label>Motor</label>
+                    <select id="motorSelect">
+                        <option value="F18D3">F18D3 (1.8 L)</option>
+                        <option value="T18SED" selected>T18SED (1.8 L) - Design / Advance</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Kilometraje actual (km)</label>
+                    <input type="number" id="kmActual" placeholder="Ej: 45200" value="0">
+                </div>
+                <button class="btn" id="btnGuardarConfig">💾 Guardar configuración</button>
+                <button class="btn btn-secondary" id="btnActualizarKm" style="margin-top:8px;">Actualizar kilometraje</button>
+            </div>
+        </div>
+
+        <!-- PÁGINA 9: EXPORTAR -->
+        <div class="page" id="page-exportar">
+            <div class="card" style="text-align:center;">
+                <div class="card-title">📤 Exportar Datos</div>
+                <p class="text-muted">Descarga un archivo CSV con todo tu historial.</p>
+                <button class="btn" id="btnExportar" style="margin-top:12px;">📥 Generar CSV</button>
+            </div>
+        </div>
+
+    </div> <!-- fin page-container -->
+</div> <!-- fin container -->
+
+<script>
+    // ==============================================================
+    // 1. NAVEGACIÓN (PAGES)
+    // ==============================================================
+    function showPage(pageId) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        const target = document.getElementById('page-' + pageId);
+        if (target) target.classList.add('active');
+        const titles = {
+            'dashboard': 'StereoApp v1.0',
+            'aceite': '🛢️ Aceite',
+            'mantenimientos': '🔧 Mantenimientos',
+            'obd': '📡 OBD-II',
+            'diagnostico': '🔍 Diagnóstico',
+            'registrar': '📌 Registrar',
+            'historial': '📜 Historial',
+            'config': '⚙️ Configuración',
+            'exportar': '📤 Exportar'
+        };
+        document.getElementById('mainTitle').innerHTML = titles[pageId] || 'StereoApp';
+        document.getElementById('pageContainer').scrollTop = 0;
+        if (pageId === 'dashboard') actualizarDashboard();
+        if (pageId === 'aceite') actualizarContadorAceite();
+        if (pageId === 'mantenimientos') renderDashboard();
+        if (pageId === 'historial') renderHistorial();
+        if (pageId === 'config') cargarDatosConfig();
+    }
+
+    // ==============================================================
+    // 2. DATOS DE MANTENIMIENTO
+    // ==============================================================
+    const SERVICIOS_POR_MOTOR = {
+        '1.6': [
+            { id: 'aceite', nombre: 'Cambio de aceite y filtro', intervaloKm: 5000 },
+            { id: 'filtroAire', nombre: 'Filtro de aire', intervaloKm: 30000 },
+            { id: 'filtroCombustible', nombre: 'Filtro de combustible', intervaloKm: 45000 },
+            { id: 'refrigerante', nombre: 'Cambio de refrigerante', intervaloKm: 45000 },
+            { id: 'correaDistribucion', nombre: '*** Correa de distribución', intervaloKm: 55000 },
+            { id: 'bujias', nombre: 'Bujías', intervaloKm: 30000 },
+            { id: 'correaAccesorios', nombre: 'Correa de accesorios', intervaloKm: 60000 },
+            { id: 'aceiteTransmision', nombre: 'Aceite de transmisión', intervaloKm: 80000 },
+            { id: 'frenos', nombre: 'Inspección de frenos', intervaloKm: 10000 },
+            { id: 'sensorO2', nombre: 'Sensor de Oxígeno (Lambda)', intervaloKm: 100000 },
+            { id: 'sensorCkp', nombre: 'Sensor Cigüeñal (CKP)', intervaloKm: 120000 },
+            { id: 'sensorCmp', nombre: 'Sensor Levas (CMP)', intervaloKm: 120000 },
+            { id: 'sensorMaf', nombre: 'Sensor MAF (Flujo de aire)', intervaloKm: 100000 },
+            { id: 'sensorEct', nombre: 'Sensor Temp. Refrigerante (ECT)', intervaloKm: 100000 },
+            { id: 'sensorKnock', nombre: 'Sensor de Detonación (Knock)', intervaloKm: 120000 }
+        ],
+        '1.8': [
+            { id: 'aceite', nombre: 'Cambio de aceite y filtro', intervaloKm: 5000 },
+            { id: 'filtroAire', nombre: 'Filtro de aire', intervaloKm: 30000 },
+            { id: 'filtroCombustible', nombre: 'Filtro de combustible', intervaloKm: 45000 },
+            { id: 'refrigerante', nombre: 'Cambio de refrigerante', intervaloKm: 45000 },
+            { id: 'correaDistribucion', nombre: '*** Correa de distribución', intervaloKm: 55000 },
+            { id: 'bujias', nombre: 'Bujías', intervaloKm: 30000 },
+            { id: 'correaAccesorios', nombre: 'Correa de accesorios', intervaloKm: 60000 },
+            { id: 'aceiteTransmision', nombre: 'Aceite de transmisión', intervaloKm: 80000 },
+            { id: 'frenos', nombre: 'Inspección de frenos', intervaloKm: 10000 },
+            { id: 'sensorO2', nombre: 'Sensor de Oxígeno (Lambda)', intervaloKm: 100000 },
+            { id: 'sensorCkp', nombre: 'Sensor Cigüeñal (CKP)', intervaloKm: 120000 },
+            { id: 'sensorCmp', nombre: 'Sensor Levas (CMP)', intervaloKm: 120000 },
+            { id: 'sensorMaf', nombre: 'Sensor MAF (Flujo de aire)', intervaloKm: 100000 },
+            { id: 'sensorEct', nombre: 'Sensor Temp. Refrigerante (ECT)', intervaloKm: 100000 },
+            { id: 'sensorKnock', nombre: 'Sensor de Detonación (Knock)', intervaloKm: 120000 }
+        ]
+    };
+
+    function getMotorKey(motor) {
+        if (motor === 'F18D3' || motor === 'T18SED' || motor === '1.8') return '1.8';
+        return '1.6';
+    }
+
+    const SINTOMAS = [
+        { id: 'ralenti', label: 'Ralentí inestable' },
+        { id: 'consumo', label: 'Alto consumo' },
+        { id: 'check', label: 'Check Engine' },
+        { id: 'arranque', label: 'Dificultad arranque' },
+        { id: 'potencia', label: 'Pérdida potencia' },
+        { id: 'tirones', label: 'Tirones' },
+        { id: 'calor', label: 'Sobrecalentamiento' },
+        { id: 'humo', label: 'Humo negro' },
+        { id: 'olfato', label: 'Olor a gasolina' },
+        { id: 'ventilador', label: 'Ventilador no enciende' }
+    ];
+
+    const DIAGNOSTICO_MAP = {
+        'ralenti': { causas: ['Cuerpo aceleración sucio', 'Bujías viejas', 'MAF sucio', 'Fuga de vacío', 'CKP degradado'] },
+        'consumo': { causas: ['Sensor O2 desgastado', 'MAF sucio', 'Filtro aire obstruido', 'Inyectores sucios'] },
+        'check': { causas: ['Sensor O2 fallando', 'MAF/MAP erróneo', 'Bobina encendido', 'Sensor ECT', 'Tapa combustible'] },
+        'arranque': { causas: ['Sensor CKP defectuoso', 'Sensor CMP fallando', 'Bomba combustible', 'Batería'] },
+        'potencia': { causas: ['MAF sucio', 'Filtro combustible', 'Sensor O2 lento', 'Catalizador', 'Correa distribución'] },
+        'tirones': { causas: ['Bujías viejas', 'Bobina defectuosa', 'Inyectores', 'TPS sucio'] },
+        'calor': { causas: ['Sensor ECT', 'Termostato', 'Ventilador', 'Refrigerante bajo'] },
+        'humo': { causas: ['MAF sucio', 'Inyectores fuga', 'Regulador presión', 'Sensor O2 corto'] },
+        'olfato': { causas: ['Fuga combustible', 'Sello inyector', 'Canister saturado'] },
+        'ventilador': { causas: ['Sensor ECT', 'Relay', 'Motor ventilador', 'Fusible'] }
+    };
+    const DTC_MAP = {
+        'P0300': 'Fallo encendido aleatorio', 'P0301': 'Fallo cilindro 1', 'P0302': 'Fallo cilindro 2',
+        'P0303': 'Fallo cilindro 3', 'P0304': 'Fallo cilindro 4', 'P0420': 'Catalizador baja eficiencia',
+        'P0171': 'Sistema pobre', 'P0172': 'Sistema rico',
+        'P0135': 'Calentador O2 S1', 'P0141': 'Calentador O2 S2',
+        'P0455': 'Fuga EVAP', 'P0500': 'Sensor velocidad'
+    };
+
+    // ==============================================================
+    // 3. ESTADO
+    // ==============================================================
+    let estado = {
+        motor: 'T18SED',
+        modelo: 'DESIGN',
+        placa: '',
+        kmActual: 0,
+        tipoAceite: 'sintetico',
+        ultimoCambioAceite: null,
+        historial: [],
+        notificados: {}
+    };
+
+    function cargarEstado() {
+        const guardado = localStorage.getItem('miOptraEstado');
+        if (guardado) {
+            try { const p = JSON.parse(guardado); estado = Object.assign({}, estado, p); } catch (e) {}
+        }
+        if (!Array.isArray(estado.historial)) estado.historial = [];
+        if (!estado.notificados) estado.notificados = {};
+        if (!estado.modelo) estado.modelo = 'DESIGN';
+        if (!estado.placa) estado.placa = '';
+        if (!estado.ultimoCambioAceite) estado.ultimoCambioAceite = null;
+    }
+    function guardarEstado() {
+        localStorage.setItem('miOptraEstado', JSON.stringify(estado));
+    }
+
+    // ==============================================================
+    // 4. FUNCIONES AUXILIARES
+    // ==============================================================
+    function ultimoRegistroServicio(id) {
+        const regs = estado.historial.filter(h => h.tipo === 'preventivo' && h.servicioId === id).sort((a,b) => b.km - a.km);
+        return regs.length ? regs[0] : null;
+    }
+
+    function calcularProximos() {
+        const key = getMotorKey(estado.motor);
+        const servicios = SERVICIOS_POR_MOTOR[key] || SERVICIOS_POR_MOTOR['1.6'];
+        const kmActual = Number(estado.kmActual) || 0;
+        return servicios.map(serv => {
+            const ultimo = ultimoRegistroServicio(serv.id);
+            const kmBase = ultimo ? Number(ultimo.km) || 0 : 0;
+            const kmProximo = kmBase + serv.intervaloKm;
+            return Object.assign({}, serv, { kmProximo: kmProximo, kmFaltan: kmProximo - kmActual, ultimoKm: ultimo ? ultimo.km : 'Nunca', ultimoFecha: ultimo ? ultimo.fecha : '-' });
+        }).sort((a,b) => a.kmFaltan - b.kmFaltan);
+    }
+
+    function actualizarContadorAceite() {
+        const ultimo = estado.ultimoCambioAceite;
+        const kmActual = Number(estado.kmActual) || 0;
+        const container = document.getElementById('contadorAceiteContainer');
+        const badge = document.getElementById('estadoAceiteBadge');
+        const diasSpan = document.getElementById('diasAceite');
+        const kmSpan = document.getElementById('kmAceite');
+        const recSpan = document.getElementById('recomendacionAceite');
+        const tipoSpan = document.getElementById('tipoAceiteMostrar');
+        const viscosidadSpan = document.getElementById('viscosidadMostrar');
+        const marcaSpan = document.getElementById('marcaAceiteMostrar');
+
+        const historialAceite = estado.historial.filter(h => h.servicioId === 'aceite' && h.tipo === 'preventivo').sort((a,b) => b.km - a.km);
+        const ultimoHistorial = historialAceite.length > 0 ? historialAceite[0] : null;
+        const datosAceite = ultimo || ultimoHistorial;
+
+        if (!datosAceite) {
+            container.className = 'contador-aceite';
+            badge.textContent = 'No registrado';
+            diasSpan.textContent = '-'; kmSpan.textContent = '-';
+            recSpan.textContent = 'Registra tu primer cambio de aceite con todos los detalles.';
+            tipoSpan.textContent = '-';
+            viscosidadSpan.textContent = '-';
+            marcaSpan.textContent = '-';
+            document.getElementById('dashAceiteDias').textContent = '-';
+            document.getElementById('dashAceiteKm').textContent = '-';
+            return;
+        }
+
+        let diffDias = 0;
+        try {
+            const f = new Date(datosAceite.fecha.split(',')[0].split('/').reverse().join('-'));
+            if (!isNaN(f)) diffDias = Math.floor((new Date() - f) / (86400000));
+        } catch(e) {}
+
+        const kmRec = kmActual - (Number(datosAceite.km) || 0);
+        let limite = 5000;
+        let tipoTexto = 'Mineral';
+        if (datosAceite.tipoAceite) {
+            if (datosAceite.tipoAceite === 'sintetico') { limite = 10000; tipoTexto = 'Sintético'; }
+            else if (datosAceite.tipoAceite === 'semisintetico') { limite = 7000; tipoTexto = 'Semisintético'; }
+            else { limite = 5000; tipoTexto = 'Mineral'; }
+        }
+        if (datosAceite.intervalo) {
+            limite = Number(datosAceite.intervalo);
+        }
+
+        diasSpan.textContent = diffDias;
+        kmSpan.textContent = kmRec;
+
+        const marca = datosAceite.marca || '-';
+        const viscosidad = datosAceite.viscosidad || '-';
+        tipoSpan.textContent = tipoTexto;
+        viscosidadSpan.textContent = viscosidad;
+        marcaSpan.textContent = marca;
+
+        let cls = 'contador-aceite', txt = '✅ OK', rec = `Límite: ${limite} km.`;
+        if (kmRec >= limite || diffDias >= 180) {
+            cls = 'contador-aceite danger';
+            txt = '⚠️ URGENTE';
+            rec = '¡Cambia el aceite YA!';
+        } else if (kmRec >= limite * 0.8 || diffDias >= 150) {
+            cls = 'contador-aceite warning';
+            txt = '⏳ Próximo';
+            rec = `Prepárate (${limite} km o 6 meses).`;
+        } else {
+            rec = `Te quedan ${limite - kmRec} km o ${Math.max(0, 180 - diffDias)} días.`;
+        }
+        container.className = cls;
+        badge.textContent = txt;
+        recSpan.textContent = rec;
+
+        document.getElementById('dashAceiteDias').textContent = diffDias;
+        document.getElementById('dashAceiteKm').textContent = kmRec;
+        const tileBadge = document.getElementById('tileAceiteBadge');
+        tileBadge.textContent = txt;
+        tileBadge.className = 'badge-mini ' + (cls.includes('danger') ? 'danger' : cls.includes('warning') ? 'warning' : '');
+    }
+
+    document.getElementById('marcaAceiteSelect').addEventListener('change', function() {
+        const otraGroup = document.getElementById('otraMarcaGroup');
+        if (this.value === 'otra') {
+            otraGroup.classList.remove('oculto');
+        } else {
+            otraGroup.classList.add('oculto');
+        }
+    });
+
+    document.getElementById('tipoAceiteSelect').addEventListener('change', function() {
+        const intervaloInput = document.getElementById('intervaloAceiteInput');
+        const tipo = this.value;
+        if (tipo === 'mineral') intervaloInput.placeholder = 'Ej: 5000 (sugerido)';
+        else if (tipo === 'semisintetico') intervaloInput.placeholder = 'Ej: 7000 (sugerido)';
+        else if (tipo === 'sintetico') intervaloInput.placeholder = 'Ej: 10000 (sugerido)';
+    });
+
+    document.getElementById('btnRegistrarAceite').addEventListener('click', function() {
+        const tipo = document.getElementById('tipoAceiteSelect').value;
+        const viscosidad = document.getElementById('viscosidadSelect').value;
+        let marca = document.getElementById('marcaAceiteSelect').value;
+        const km = parseInt(document.getElementById('kmAceiteInput').value) || 0;
+        let intervalo = parseInt(document.getElementById('intervaloAceiteInput').value) || 0;
+
+        if (marca === 'otra') {
+            marca = document.getElementById('otraMarcaInput').value.trim();
+            if (!marca) { alert('Por favor escribe el nombre de la marca.'); return; }
+        }
+
+        if (!tipo) { alert('Selecciona el tipo de aceite.'); return; }
+        if (!viscosidad) { alert('Selecciona la viscosidad.'); return; }
+        if (km <= 0) { alert('Ingresa un kilometraje válido.'); return; }
+
+        if (intervalo <= 0) {
+            if (tipo === 'mineral') intervalo = 5000;
+            else if (tipo === 'semisintetico') intervalo = 7000;
+            else if (tipo === 'sintetico') intervalo = 10000;
+        }
+
+        const fecha = new Date().toLocaleString('es-ES', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+
+        estado.ultimoCambioAceite = {
+            tipoAceite: tipo,
+            viscosidad: viscosidad,
+            marca: marca,
+            km: km,
+            intervalo: intervalo,
+            fecha: fecha
+        };
+
+        const existente = estado.historial.filter(h => h.servicioId === 'aceite' && h.tipo === 'preventivo');
+        let duplicado = false;
+        existente.forEach(h => {
+            if (Number(h.km) >= km) duplicado = true;
+        });
+
+        if (!duplicado) {
+            estado.historial.push({
+                tipo: 'preventivo',
+                servicioId: 'aceite',
+                km: km,
+                fecha: fecha,
+                costo: '',
+                tipoAceite: tipo,
+                viscosidad: viscosidad,
+                marca: marca,
+                intervalo: intervalo
+            });
+        } else {
+            const ultimoReg = existente.sort((a,b) => b.km - a.km)[0];
+            if (ultimoReg) {
+                ultimoReg.tipoAceite = tipo;
+                ultimoReg.viscosidad = viscosidad;
+                ultimoReg.marca = marca;
+                ultimoReg.intervalo = intervalo;
+                ultimoReg.km = km;
+                ultimoReg.fecha = fecha;
+            }
+        }
+
+        if (km > estado.kmActual) estado.kmActual = km;
+        guardarEstado();
+        actualizarUI();
+        alert('✅ Cambio de aceite registrado correctamente.\n' +
+              'Tipo: ' + tipo + '\n' +
+              'Viscosidad: ' + viscosidad + '\n' +
+              'Marca: ' + marca + '\n' +
+              'Intervalo: ' + intervalo + ' km');
+        showPage('aceite');
+    });
+
+    function renderDashboard() {
+        const proximos = calcularProximos();
+        const container = document.getElementById('proximosServicios');
+        if (proximos.length === 0) { container.innerHTML = '<p class="text-muted">No hay servicios.</p>'; return; }
+        let html = '';
+        proximos.slice(0, 6).forEach(s => {
+            const cls = s.kmFaltan <= 0 ? 'done' : '';
+            const label = s.kmFaltan <= 0 ? '⚠️ VENCIDO' : `${s.kmFaltan} km`;
+            const icon = s.id.startsWith('sensor') ? '🔬 ' : '';
+            html += `<div class="servicio-item ${cls}">
+                <div><div class="nombre">${icon}${s.nombre}</div><div class="intervalo">Próx. ${s.kmProximo} km</div></div>
+                <span class="badge">${label}</span>
+            </div>`;
+        });
+        container.innerHTML = html;
+        const vencidos = proximos.filter(s => s.kmFaltan <= 0).length;
+        document.getElementById('tileMantBadge').textContent = vencidos;
+        document.getElementById('tileMantBadge').className = 'badge-mini' + (vencidos > 0 ? ' danger' : '');
+    }
+
+    function renderHistorial(filtro = 'todos') {
+        let items = [...estado.historial];
+        if (filtro === 'preventivo') items = items.filter(h => h.tipo === 'preventivo');
+        else if (filtro === 'correctivo') items = items.filter(h => h.tipo === 'correctivo');
+        const container = document.getElementById('listaHistorial');
+        if (items.length === 0) { container.innerHTML = '<p class="text-muted">No hay registros.</p>'; return; }
+        items.sort((a,b) => new Date(b.fecha) - new Date(a.fecha));
+        let html = '';
+        items.forEach(item => {
+            const tag = item.tipo === 'preventivo' ? '<span class="tag">Preventivo</span>' : '<span class="tag correctivo">Correctivo</span>';
+            const key = getMotorKey(estado.motor);
+            const servicioEncontrado = item.tipo === 'preventivo' ? (SERVICIOS_POR_MOTOR[key] || []).find(s => s.id === item.servicioId) : null;
+            let nombre = item.tipo === 'preventivo' ? ((servicioEncontrado && servicioEncontrado.nombre) || item.servicioId) : (item.descripcion || 'Reparación');
+            let detalles = '';
+            if (item.servicioId === 'aceite' && item.tipo === 'preventivo') {
+                const tipoTexto = item.tipoAceite ? (item.tipoAceite === 'sintetico' ? 'Sintético' : item.tipoAceite === 'semisintetico' ? 'Semisintético' : 'Mineral') : '';
+                detalles = ` ${tipoTexto} ${item.viscosidad || ''} ${item.marca || ''}`.trim();
+                if (detalles) nombre += ' (' + detalles + ')';
+            }
+            html += `<div class="historial-item"><div style="display:flex;justify-content:space-between;"><div><strong>${nombre}</strong> ${tag}</div><div style="font-size:0.8rem;">${item.fecha} · ${item.km} km</div></div>${item.costo ? `<div style="font-size:0.9rem;">💰 $${item.costo}</div>` : ''}</div>`;
+        });
+        container.innerHTML = html;
+    }
+
+    function cargarDatosConfig() {
+        document.getElementById('modeloSelect').value = estado.modelo || 'DESIGN';
+        document.getElementById('placaInput').value = estado.placa || '';
+        document.getElementById('motorSelect').value = estado.motor || 'T18SED';
+        document.getElementById('kmActual').value = estado.kmActual;
+    }
+
+    function actualizarDashboard() {
+        document.getElementById('dashModelo').textContent = estado.modelo || 'DESIGN';
+        document.getElementById('dashPlaca').textContent = estado.placa ? '📋 ' + estado.placa : '📋 Sin placa';
+        document.getElementById('dashMotorDisplay').textContent = estado.motor || 'T18SED';
+        document.getElementById('headerKm').textContent = estado.kmActual + ' km';
+        document.getElementById('dashKm').textContent = estado.kmActual;
+        document.getElementById('headerLed').className = 'led-mini' + (obdConnected ? ' on' : '');
+        const perm = Notification.permission;
+        const tileNoti = document.getElementById('tileNotiBadge');
+        tileNoti.textContent = perm === 'granted' ? 'ON' : (perm === 'denied' ? 'Off' : '?');
+        tileNoti.className = 'badge-mini' + (perm === 'granted' ? '' : ' danger');
+        document.getElementById('tileOBDStatus').textContent = obdConnected ? '✅' : 'Off';
+        document.getElementById('tileOBDStatus').className = 'badge-mini' + (obdConnected ? '' : ' danger');
+    }
+
+    function actualizarUI() {
+        cargarDatosConfig();
+        actualizarListaServicios();
+        renderDashboard();
+        renderHistorial('todos');
+        actualizarContadorAceite();
+        actualizarDashboard();
+        toggleCamposMantenimiento();
+        actualizarEstadoNotificaciones();
+    }
+
+    function actualizarListaServicios() {
+        const key = getMotorKey(estado.motor);
+        const servicios = SERVICIOS_POR_MOTOR[key] || SERVICIOS_POR_MOTOR['1.6'];
+        const sel = document.getElementById('servicioPreventivo');
+        sel.innerHTML = '';
+        servicios.forEach(s => {
+            const opt = document.createElement('option');
+            opt.value = s.id;
+            opt.textContent = `${s.nombre} (${s.intervaloKm} km) ${s.id.startsWith('sensor') ? '🔬' : ''}`;
+            sel.appendChild(opt);
+        });
+    }
+
+    function toggleCamposMantenimiento() {
+        const tipo = document.getElementById('tipoMant').value;
+        document.getElementById('camposPreventivo').classList.toggle('oculto', tipo !== 'preventivo');
+        document.getElementById('camposCorrectivo').classList.toggle('oculto', tipo !== 'correctivo');
+    }
+
+    // ==============================================================
+    // 5. NOTIFICACIONES
+    // ==============================================================
+    function actualizarEstadoNotificaciones() {
+        const perm = Notification.permission;
+        const dot = document.getElementById('dashDotNoti');
+        const text = document.getElementById('dashTextNoti');
+        if (perm === 'granted') { dot.className = 'dot active'; text.textContent = '✅ Notificaciones activas'; }
+        else if (perm === 'denied') { dot.className = 'dot denied'; text.textContent = '❌ Permiso denegado'; }
+        else { dot.className = 'dot'; text.textContent = '⏳ Presiona el botón 🔔 para activar'; }
+    }
+
+    async function solicitarNotificaciones() {
+        if (!('Notification' in window)) { alert('No soportado.'); return; }
+        if (Notification.permission === 'granted') { alert('Ya están activas.'); actualizarEstadoNotificaciones(); return; }
+        if (Notification.permission === 'denied') { alert('Habilítalas en Ajustes > Notificaciones.'); return; }
+        const res = await Notification.requestPermission();
+        if (res === 'granted') {
+            new Notification('🔧 StereoApp', { body: 'Notificaciones activadas.', icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="80" height="80" x="10" y="10" rx="15" fill="%230b3b5c"/><text x="20" y="65" font-size="40" fill="white" font-family="sans-serif">O</text></svg>' });
+            alert('✅ Activadas.');
+        } else alert('❌ No se concedió.');
+        actualizarEstadoNotificaciones();
+        actualizarDashboard();
+    }
+
+    function verificarVencimientosYNotificar() {
+        if (Notification.permission !== 'granted') return;
+        const proximos = calcularProximos();
+        const vencidos = proximos.filter(s => s.kmFaltan <= 0);
+        if (vencidos.length === 0) {
+            Object.keys(estado.notificados).forEach(k => { if (!vencidos.find(s => s.id === k)) delete estado.notificados[k]; });
+            guardarEstado();
+            return;
+        }
+        vencidos.forEach(serv => {
+            if (estado.notificados[serv.id]) return;
+            const icon = serv.id.startsWith('sensor') ? '🔬 ' : '';
+            try {
+                new Notification(`⚠️ ${icon}${serv.nombre} VENCIDO`, {
+                    body: `Vencido por ${Math.abs(serv.kmFaltan)} km. ¡Atiéndelo!`,
+                    icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="80" height="80" x="10" y="10" rx="15" fill="%23b13e3e"/><text x="20" y="65" font-size="40" fill="white" font-family="sans-serif">!</text></svg>',
+                    vibrate: [200,100,200]
+                });
+            } catch(e) {}
+            estado.notificados[serv.id] = true;
+        });
+        guardarEstado();
+    }
+
+    // ==============================================================
+    // 6. DIAGNÓSTICO
+    // ==============================================================
+    function renderSintomas() {
+        const container = document.getElementById('sintomasContainer');
+        container.innerHTML = '';
+        SINTOMAS.forEach(s => {
+            const div = document.createElement('div');
+            div.className = 'sintoma-item';
+            div.dataset.id = s.id;
+            div.innerHTML = `<span>${s.label}</span>`;
+            div.addEventListener('click', function() { this.classList.toggle('active'); });
+            container.appendChild(div);
+        });
+    }
+
+    document.getElementById('btnDiagnosticar').addEventListener('click', function() {
+        const activos = document.querySelectorAll('.sintoma-item.active');
+        if (activos.length === 0) { alert('Selecciona síntomas.'); return; }
+        const causasSet = new Set();
+        const ids = Array.from(activos).map(el => el.dataset.id);
+        ids.forEach(id => { const info = DIAGNOSTICO_MAP[id]; if (info) info.causas.forEach(c => causasSet.add(c)); });
+        let arr = Array.from(causasSet);
+        let html = '<ul>';
+        if (arr.length === 0) html += '<li>No se encontraron causas.</li>';
+        else arr.forEach(c => html += `<li>${c}</li>`);
+        html += '</ul><p class="text-muted">💡 Revisa sensores en el dashboard.</p>';
+        document.getElementById('contenidoDiagnostico').innerHTML = html;
+        document.getElementById('resultadoDiagnostico').classList.remove('oculto');
+    });
+
+    // ==============================================================
+    // 7. OBD-II BLUETOOTH
+    // ==============================================================
+    let obdConnected = false, obdDevice = null, obdServer = null, obdCharacteristic = null, obdInterval = null;
+
+    async function conectarOBD() {
+        if (!navigator.bluetooth) { alert('Web Bluetooth no soportado.'); return; }
+        try {
+            document.getElementById('estadoOBD').textContent = 'Buscando...';
+            document.getElementById('ledOBD').className = 'led error';
+            const device = await navigator.bluetooth.requestDevice({
+                filters: [{ services: ['0000ffe0-0000-1000-8000-00805f9b34fb'] }],
+                optionalServices: ['0000ffe0-0000-1000-8000-00805f9b34fb']
+            });
+            const server = await device.gatt.connect();
+            const service = await server.getPrimaryService('0000ffe0-0000-1000-8000-00805f9b34fb');
+            const characteristic = await service.getCharacteristic('0000ffe1-0000-1000-8000-00805f9b34fb');
+            obdDevice = device; obdServer = server; obdCharacteristic = characteristic; obdConnected = true;
+            document.getElementById('ledOBD').className = 'led on';
+            document.getElementById('estadoOBD').textContent = 'Conectado ✅';
+            document.getElementById('btnConectarOBD').disabled = true;
+            document.getElementById('btnDesconectarOBD').disabled = false;
+            document.getElementById('btnLeerDTC').disabled = false;
+            document.getElementById('datosOBD').classList.remove('oculto');
+            await enviarOBD('AT Z\r'); await new Promise(r => setTimeout(r, 500));
+            await enviarOBD('AT SP 0\r'); await new Promise(r => setTimeout(r, 300));
+            alert('✅ OBD conectado.');
+            iniciarLecturaOBD();
+        } catch(e) {
+            document.getElementById('estadoOBD').textContent = 'Error: ' + e.message;
+            document.getElementById('ledOBD').className = 'led error';
+        }
+    }
+
+    function desconectarOBD() {
+        if (obdInterval) clearInterval(obdInterval);
+        if (obdServer && obdServer.connected) obdServer.disconnect();
+        obdConnected = false;
+        document.getElementById('ledOBD').className = 'led';
+        document.getElementById('estadoOBD').textContent = 'Desconectado';
+        document.getElementById('btnConectarOBD').disabled = false;
+        document.getElementById('btnDesconectarOBD').disabled = true;
+        document.getElementById('btnLeerDTC').disabled = true;
+        document.getElementById('datosOBD').classList.add('oculto');
+        document.getElementById('rpmValor').textContent = '---';
+        document.getElementById('tempValor').textContent = '---';
+        document.getElementById('speedValor').textContent = '---';
+        document.getElementById('loadValor').textContent = '---';
+        document.getElementById('dtcContainer').innerHTML = '';
+        actualizarDashboard();
+    }
+
+    async function enviarOBD(cmd) {
+        if (!obdCharacteristic) return null;
+        try {
+            await obdCharacteristic.writeValue(new TextEncoder().encode(cmd));
+            await new Promise(r => setTimeout(r, 200));
+            const res = await obdCharacteristic.readValue();
+            return new TextDecoder().decode(res).replace(/\r/g,'').replace(/\n/g,'').replace(/>/g,'').trim();
+        } catch(e) { return null; }
+    }
+
+    async function leerOBD(pid) {
+        const raw = await enviarOBD(pid + '\r');
+        if (!raw) return null;
+        const match = raw.match(/[0-9A-F]{2}\s[0-9A-F]{2}\s[0-9A-F]{2}\s[0-9A-F]{2}/i);
+        if (!match) return null;
+        return match[0].split(' ').map(h => parseInt(h,16));
+    }
+
+    async function actualizarDatosOBD() {
+        if (!obdConnected) return;
+        const rpm = await leerOBD('01 0C');
+        if (rpm && rpm.length >= 4) document.getElementById('rpmValor').textContent = Math.round((rpm[2]*256+rpm[3])/4);
+        const temp = await leerOBD('01 05');
+        if (temp && temp.length >= 3) document.getElementById('tempValor').textContent = (temp[2]-40)+'°C';
+        const speed = await leerOBD('01 0D');
+        if (speed && speed.length >= 3) document.getElementById('speedValor').textContent = speed[2];
+        const load = await leerOBD('01 04');
+        if (load && load.length >= 3) document.getElementById('loadValor').textContent = Math.round((load[2]/255)*100)+'%';
+    }
+
+    function iniciarLecturaOBD() {
+        if (obdInterval) clearInterval(obdInterval);
+        actualizarDatosOBD();
+        obdInterval = setInterval(actualizarDatosOBD, 2000);
+        actualizarDashboard();
+    }
+
+    async function leerDTCs() {
+        if (!obdConnected) { alert('Conecta OBD.'); return; }
+        const container = document.getElementById('dtcContainer');
+        container.innerHTML = '<p class="text-muted">Leyendo...</p>';
+        const raw = await enviarOBD('03\r');
+        container.innerHTML = '';
+        if (!raw) { container.innerHTML = '<p class="text-muted">No se pudo leer.</p>'; return; }
+        const matches = raw.match(/[0-9A-F]{2}\s[0-9A-F]{2}\s[0-9A-F]{2}\s[0-9A-F]{2}/gi);
+        if (!matches) { container.innerHTML = '<p class="text-muted">✅ Sin códigos.</p>'; return; }
+        let found = false;
+        matches.forEach(m => {
+            const bytes = m.split(' ').map(h => parseInt(h,16));
+            if (bytes[0] === 0x43) {
+                const first = (bytes[1]>>6)&3, second=(bytes[1]>>4)&15, third=bytes[1]&15, fourth=(bytes[2]>>4)&15, fifth=bytes[2]&15;
+                let prefix = ''; if(first===0)prefix='P0'; else if(first===1)prefix='P1'; else if(first===2)prefix='P2'; else prefix='P3';
+                const code = prefix + second.toString(16).toUpperCase() + third.toString(16).toUpperCase() + fourth.toString(16).toUpperCase() + fifth.toString(16).toUpperCase();
+                if (code !== 'P0000') { found = true; container.innerHTML += `<div class="dtc-item"><span class="desc">${code}</span> - ${DTC_MAP[code] || 'Genérico'}</div>`; }
+            }
+        });
+        if (!found) container.innerHTML = '<p class="text-muted">✅ Sin códigos DTC.</p>';
+    }
+
+    // ==============================================================
+    // 8. EVENTOS
+    // ==============================================================
+    document.getElementById('btnGuardarConfig').addEventListener('click', function() {
+        estado.modelo = document.getElementById('modeloSelect').value;
+        estado.placa = document.getElementById('placaInput').value.trim().toUpperCase();
+        estado.motor = document.getElementById('motorSelect').value;
+        estado.kmActual = parseInt(document.getElementById('kmActual').value) || 0;
+        guardarEstado();
+        actualizarUI();
+        alert('✅ Configuración guardada.');
+        showPage('dashboard');
+    });
+
+    document.getElementById('btnActualizarKm').addEventListener('click', function() {
+        const n = prompt('Kilometraje actual:', estado.kmActual);
+        if (n !== null) { estado.kmActual = parseInt(n) || 0; guardarEstado(); actualizarUI(); }
+    });
+
+    document.getElementById('tipoMant').addEventListener('change', toggleCamposMantenimiento);
+
+    document.getElementById('btnRegistrar').addEventListener('click', function() {
+        const tipo = document.getElementById('tipoMant').value;
+        const km = parseInt(document.getElementById('kmServicio').value) || estado.kmActual || 0;
+        if (km <= 0) { alert('Ingresa km válido.'); return; }
+        const fecha = new Date().toLocaleString('es-ES', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+        if (tipo === 'preventivo') {
+            const id = document.getElementById('servicioPreventivo').value;
+            if (!id) { alert('Selecciona servicio.'); return; }
+            const ultimo = ultimoRegistroServicio(id);
+            if (ultimo && Number(ultimo.km) >= km && !confirm(`Ya hay registro con km ${ultimo.km}. ¿Registrar igual?`)) return;
+            estado.historial.push({ tipo:'preventivo', servicioId:id, km, fecha, costo:'' });
+            if (estado.notificados[id]) delete estado.notificados[id];
+        } else {
+            const desc = document.getElementById('descCorrectivo').value.trim();
+            if (!desc) { alert('Escribe descripción.'); return; }
+            const costo = document.getElementById('costoCorrectivo').value.trim() || '';
+            estado.historial.push({ tipo:'correctivo', servicioId:'correctivo', descripcion:desc, km, fecha, costo });
+        }
+        if (km > estado.kmActual) estado.kmActual = km;
+        guardarEstado();
+        actualizarUI();
+        document.getElementById('descCorrectivo').value = '';
+        document.getElementById('costoCorrectivo').value = '';
+        document.getElementById('kmServicio').value = '';
+        alert('✅ Registrado.');
+        showPage('historial');
+    });
+
+    document.getElementById('btnFiltroTodos').addEventListener('click', () => renderHistorial('todos'));
+    document.getElementById('btnFiltroPreventivo').addEventListener('click', () => renderHistorial('preventivo'));
+    document.getElementById('btnFiltroCorrectivo').addEventListener('click', () => renderHistorial('correctivo'));
+
+    document.getElementById('btnBorrarHistorial').addEventListener('click', function() {
+        if (confirm('¿Borrar TODO el historial?')) { estado.historial = []; estado.notificados = {}; estado.ultimoCambioAceite = null; guardarEstado(); actualizarUI(); showPage('historial'); }
+    });
+
+    document.getElementById('btnExportar').addEventListener('click', function() {
+        if (estado.historial.length === 0) { alert('Sin registros.'); return; }
+        let csv = 'Fecha,Kilometraje,Tipo,Servicio/Reparación,Costo\n';
+        estado.historial.forEach(item => {
+            const tipo = item.tipo === 'preventivo' ? 'Preventivo' : 'Correctivo';
+            const key = getMotorKey(estado.motor);
+            const servicioEncontrado = item.tipo === 'preventivo' ? (SERVICIOS_POR_MOTOR[key]||[]).find(s=>s.id===item.servicioId) : null;
+            let nombre = item.tipo === 'preventivo' ? ((servicioEncontrado && servicioEncontrado.nombre)||item.servicioId) : (item.descripcion||'Reparación');
+            if (item.servicioId === 'aceite' && item.tipo === 'preventivo') {
+                const tipoTexto = item.tipoAceite ? (item.tipoAceite === 'sintetico' ? 'Sintético' : item.tipoAceite === 'semisintetico' ? 'Semisintético' : 'Mineral') : '';
+                const detalles = `${tipoTexto} ${item.viscosidad || ''} ${item.marca || ''}`.trim();
+                if (detalles) nombre += ' (' + detalles + ')';
+            }
+            csv += `"${item.fecha}","${item.km}","${tipo}","${nombre}","${item.costo||''}"\n`;
+        });
+        const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `optra_${estado.placa || 'sinplaca'}_${new Date().toISOString().slice(0,10)}.csv`;
+        document.body.appendChild(link); link.click(); document.body.removeChild(link);
+        URL.revokeObjectURL(link.href);
+    });
+
+    document.getElementById('btnConectarOBD').addEventListener('click', conectarOBD);
+    document.getElementById('btnDesconectarOBD').addEventListener('click', desconectarOBD);
+    document.getElementById('btnLeerDTC').addEventListener('click', leerDTCs);
+
+    // ==============================================================
+    // 9. INICIALIZACIÓN (SIN SERVICE WORKER)
+    // ==============================================================
+    cargarEstado();
+    renderSintomas();
+    actualizarUI();
+
+    setInterval(verificarVencimientosYNotificar, 30000);
+    setInterval(actualizarContadorAceite, 60000);
+    setTimeout(verificarVencimientosYNotificar, 2000);
+
+    document.getElementById('btnHome').addEventListener('click', () => showPage('dashboard'));
+
+    console.log('🚗 StereoApp v1.0 - Versión simplificada (sin Service Worker)');
+</script>
+</body>
+</html>
